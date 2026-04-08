@@ -88,7 +88,7 @@ resource "azurerm_resource_group" "$$$rinkesh$$$" {
 
 resource "azurerm_resource_group" "rinkesh" {
     name     = "rg-dev-cpg03-01"   #key = Value Pairs  
-    location = "South India"        #key = Value Pairs
+    location = "eastus"        #key = Value Pairs
 }
 
 resource "azurerm_virtual_network" "vnet01" {
@@ -98,13 +98,98 @@ resource "azurerm_virtual_network" "vnet01" {
     resource_group_name = azurerm_resource_group.rinkesh.name                  #"rg-dev-cpg03-01"     #"cpg03-batch-rg03"
 }
 
-
 resource "azurerm_subnet" "vm_subnet01" {
     name = "vm-subnet-dev-cpg03-01"
     resource_group_name = azurerm_resource_group.rinkesh.name        #"rg-dev-cpg03-01"     #s"cpg03-batch-rg03"
     virtual_network_name = azurerm_virtual_network.vnet01.name
     address_prefixes = ["10.0.0.0/28"] # 16 ips will be created
 }
+
+#Network interface card (NIC)
+resource "azurerm_network_interface" "vm_nic01" {
+  name = "vm-nic-dev-cpg03-01"
+  resource_group_name = azurerm_resource_group.rinkesh.name
+  location = azurerm_resource_group.rinkesh.location
+
+    ip_configuration {
+        name = "vm-nic-ip-config-dev-cpg03-01"
+        private_ip_address_allocation = "Dynamic"
+        subnet_id = azurerm_subnet.vm_subnet01.id
+    }
+}
+
+# Terraform is Case Sensitive
+#VM
+resource "azurerm_windows_virtual_machine" "vm01" {
+    name = "app-vm-dev-cpg03-01"
+  location = azurerm_resource_group.rinkesh.location
+  resource_group_name = azurerm_resource_group.rinkesh.name
+  network_interface_ids = [azurerm_network_interface.vm_nic01.id]
+  computer_name = "app-vm-dev-01"
+  size = "Standard_DS2_v2"
+
+  admin_username = "adminuser"
+  admin_password = "@#$kxdyOGB78#@"
+
+  os_disk {
+    caching = "ReadWrite"
+    storage_account_type = "StandardSSD_LRS"
+    disk_size_gb = 300
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer = "WindowsServer"
+    sku = "2016-Datacenter"
+    version = "latest"
+  }
+}
+
+#Database Subnet
+resource "azurerm_subnet" "database_subnet01" {
+    name = "database-subnet-dev-cpg03-01"
+    resource_group_name = azurerm_resource_group.rinkesh.name        #"rg-dev-cpg03-01"     #s"cpg03-batch-rg03"
+    virtual_network_name = azurerm_virtual_network.vnet01.name
+    address_prefixes = ["10.0.0.16/28"] # 16 ips will be created
+}
+
+#Application Subnet
+resource "azurerm_subnet" "application_subnet01" {
+    name = "application-subnet-dev-cpg03-01"
+    resource_group_name = azurerm_resource_group.rinkesh.name        #"rg-dev-cpg03-01"     #s"cpg03-batch-rg03"
+    virtual_network_name = azurerm_virtual_network.vnet01.name
+    address_prefixes = ["10.0.0.32/28"] # 16 ips will be created
+
+    depends_on = [ azurerm_subnet.database_subnet01 ]
+}
+
+resource "azurerm_resource_group" "cpg03-02rinkesh" {
+    name     = "rg-dev-cpg03-02"   #key = Value Pairs  
+    location = "eastus"        #key = Value Pairs
+
+    depends_on = [ azurerm_subnet.database_subnet01, azurerm_subnet.application_subnet01 ]
+}
+
+#Frontend Subnet
+resource "azurerm_subnet" "frontend_subnet01" {
+    name = var.frontend_subnet01_name
+    resource_group_name = azurerm_resource_group.rinkesh.name        #"rg-dev-cpg03-01"     #s"cpg03-batch-rg03"
+    virtual_network_name = azurerm_virtual_network.vnet01.name
+    address_prefixes = var.frontend_subnet01_rinkesh # 16 ips will be created
+
+    depends_on = [ azurerm_subnet.database_subnet01 ]
+}
+
+
+
+
+# I want the application subnet should be created only after Database subnet is created 
+
+
+# #Dependency is two types
+# 1. Implicit Depency --> Resource Reference. 
+# 2. Explicit Depency --> depends_on
+
 
 
 # Dependency 
