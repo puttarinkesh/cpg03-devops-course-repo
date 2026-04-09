@@ -92,9 +92,9 @@ resource "azurerm_resource_group" "rinkesh" {
 }
 
 resource "azurerm_virtual_network" "vnet01" {
-    name                = "vnet-dev-cpg03-01"   #resourcetype-environment-client-identification
+    name                = var.vnet01_name  #resourcetype-environment-client-identification
     location            = azurerm_resource_group.rinkesh.location              #"South India"
-    address_space       = ["10.0.0.0/24"]   #IPV4
+    address_space       = var.vnet01_address_spaces
     resource_group_name = azurerm_resource_group.rinkesh.name                  #"rg-dev-cpg03-01"     #"cpg03-batch-rg03"
 }
 
@@ -116,33 +116,6 @@ resource "azurerm_network_interface" "vm_nic01" {
         private_ip_address_allocation = "Dynamic"
         subnet_id = azurerm_subnet.vm_subnet01.id
     }
-}
-
-# Terraform is Case Sensitive
-#VM
-resource "azurerm_windows_virtual_machine" "vm01" {
-    name = "app-vm-dev-cpg03-01"
-  location = azurerm_resource_group.rinkesh.location
-  resource_group_name = azurerm_resource_group.rinkesh.name
-  network_interface_ids = [azurerm_network_interface.vm_nic01.id]
-  computer_name = "app-vm-dev-01"
-  size = "Standard_DS2_v2"
-
-  admin_username = "adminuser"
-  admin_password = "@#$kxdyOGB78#@"
-
-  os_disk {
-    caching = "ReadWrite"
-    storage_account_type = "StandardSSD_LRS"
-    disk_size_gb = 300
-  }
-
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer = "WindowsServer"
-    sku = "2016-Datacenter"
-    version = "latest"
-  }
 }
 
 #Database Subnet
@@ -179,6 +152,34 @@ resource "azurerm_subnet" "frontend_subnet01" {
 
     depends_on = [ azurerm_subnet.database_subnet01 ]
 }
+
+# Terraform is Case Sensitive
+#VM
+resource "azurerm_windows_virtual_machine" "vm01" {
+    name = var.vm01_name
+  location = azurerm_resource_group.rinkesh.location
+  resource_group_name = azurerm_resource_group.rinkesh.name
+  network_interface_ids = [azurerm_network_interface.vm_nic01.id]
+  computer_name = var.vm01_computer_name
+  size = var.vm01_size
+
+  admin_username = var.vm01_admin_username
+  admin_password = var.vm01_admin_password
+
+  os_disk {
+    caching = "ReadWrite"
+    storage_account_type = "StandardSSD_LRS"
+    disk_size_gb = 300
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer = "WindowsServer"
+    sku = "2016-Datacenter"
+    version = "latest"
+  }
+}
+
 
 
 

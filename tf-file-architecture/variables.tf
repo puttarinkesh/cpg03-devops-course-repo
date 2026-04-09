@@ -24,3 +24,48 @@ variable "frontend_subnet01_rinkesh" {
   type = list
   default =  ["10.0.0.48/28"]
 }
+
+variable "vnet01_name" {
+    description = "(Required) The name of the virtual network. Changing this forces a new resource to be created."
+    type = string   #Specify the variable data type
+    default = "vnet-dev-cpg03-01" #Specify the value you want to use
+}
+
+
+variable "vnet01_address_spaces" {
+    description = "(Optional) The address space that is used the virtual network. You can supply more than one address space."
+    type = list   #Specify the variable data type
+    default = ["10.0.0.0/24"] #Specify the value you want to use
+}
+
+variable "vm01_name" {
+    description = ""
+    type = string
+    default = "app-vm-dev-cpg03-01"
+}
+
+
+
+variable "vm01_computer_name" {
+    description = ""
+    type = string
+    default = "app-vm-dev-01"
+}
+
+variable "vm01_size" {
+    description = ""
+    type = string
+    default = "Standard_DS2_v2"
+}
+
+variable "vm01_admin_username" {
+    description = ""
+    type = string
+    default = "adminuser"
+}
+
+variable "vm01_admin_password" {
+    description = ""
+    type = string
+    default = "@#$kxdyOGB78#@"
+}
