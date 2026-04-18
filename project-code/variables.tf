@@ -81,3 +81,16 @@ variable "vm_nic01_ip_conf_name" {
     type = string   #Specify the variable data type
     default = "vm-nic-ip-config-dev-cpg03-01"
 }
+
+
+variable "storage_names" {
+  description = "value"
+  type = set(string)
+  default = [ "east", "west", "south", "north"]
+}
+
+variable "location" {
+    description = "location"
+    type = string   #Specify the variable data type
+    default = "eastus2"    #"south india" #Specify the value you want to use
+}
